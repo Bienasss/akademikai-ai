@@ -1,36 +1,271 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Akademikai AI
 
-## Getting Started
+Scientific work based question answering AI and document analysis toolkit with RAG (Retrieval Augmented Generation) capabilities.
 
-First, run the development server:
+## Overview
+
+This project combines a Next.js chatbot frontend with a Python FastAPI backend for document processing, vectorization, and semantic search. The system can answer questions based on a large collection of PDF documents using RAG technology.
+
+## Architecture
+
+- **Frontend**: Next.js 15 with TypeScript, React, and AI SDK
+- **Backend**: Python FastAPI with sentence-transformers and ChromaDB
+- **Database**: PostgreSQL (chat history) + ChromaDB (vector embeddings)
+- **AI Model**: OpenAI GPT-4o-mini with RAG context injection
+
+## Features
+
+- PDF Document Processing - Extract and analyze text from PDF documents
+- Vector Search - Semantic search across document collection using embeddings
+- RAG Integration - Retrieval Augmented Generation for context-aware responses
+- Machine Learning Models - Train classifiers for text analysis
+- Web Scraping - Extract content and files from websites
+- RSS Feed Processing - Parse and analyze news headlines
+- Chat Interface - Interactive chatbot with document-based answers
+
+## Setup Instructions
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- PostgreSQL database (for chat history)
+
+### 1. Clone and Install Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install Python dependencies
+source venv/bin/activate
+pip install -r requirements.txt
+pip install -r backend/requirements.txt
+
+# Install Node.js dependencies
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Configuration
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local` file in the root directory:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+# OpenAI API Key
+OPENAI_API_KEY=your_openai_api_key
 
-## Learn More
+# Python Backend URL
+PYTHON_BACKEND_URL=http://localhost:8000
 
-To learn more about Next.js, take a look at the following resources:
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Database Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# Generate database migrations
+npm run db:generate
 
-## Deploy on Vercel
+# Push schema to database
+npm run db:push
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 4. Process Documents
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Before using the RAG system, process all PDF documents:
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Process all PDFs in data/ and scraped_files/ directories
+python backend/scripts/process_documents.py
+```
+
+This will:
+- Extract text from all PDF files
+- Chunk text into manageable segments
+- Generate embeddings using multilingual sentence-transformers
+- Store in ChromaDB vector database
+
+### 5. Start Development Servers
+
+**Terminal 1 - Python Backend:**
+```bash
+source venv/bin/activate
+cd backend
+uvicorn main:app --reload --port 8000
+```
+
+**Terminal 2 - Next.js Frontend:**
+```bash
+npm run dev
+```
+
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+## Usage
+
+### Chat Interface
+
+1. Open http://localhost:3000
+2. Start a new chat session
+3. Ask questions about the documents
+4. The system will automatically retrieve relevant context from PDFs and provide answers with source citations
+
+### API Endpoints
+
+#### Python Backend
+
+- `GET /` - API information
+- `GET /health` - Health check
+- `POST /api/vectorize` - Process and vectorize documents
+  ```json
+  {
+    "directory": "/path/to/pdfs"
+  }
+  ```
+- `POST /api/search` - Semantic search
+  ```json
+  {
+    "query": "your search query",
+    "top_k": 5
+  }
+  ```
+- `POST /api/query` - RAG query with formatted context
+  ```json
+  {
+    "query": "your question",
+    "top_k": 5
+  }
+  ```
+- `GET /api/documents` - List all indexed documents
+
+#### Next.js API Routes
+
+- `POST /api/rag` - Proxy to Python backend RAG query
+- `GET /api/documents` - List available documents
+- `POST /api/chat` - Chat endpoint with RAG integration
+
+## Project Structure
+
+```
+akademikai_ai/
+├── backend/                 # Python FastAPI backend
+│   ├── main.py             # FastAPI application
+│   ├── config.py           # Configuration
+│   ├── requirements.txt    # Python dependencies
+│   ├── services/           # Core services
+│   │   ├── pdf_processor.py
+│   │   ├── vectorizer.py
+│   │   └── rag_service.py
+│   └── scripts/            # Utility scripts
+│       ├── process_documents.py
+│       └── rebuild_index.py
+├── src/                     # Next.js frontend
+│   └── app/
+│       ├── api/             # API routes
+│       │   ├── chat/       # Chat endpoint
+│       │   ├── rag/        # RAG proxy
+│       │   └── documents/  # Documents list
+│       └── ui/             # React components
+├── data/                    # PDF documents (400+ files)
+├── scraped_files/           # Scraped documents
+├── chroma_db/              # Vector database (generated)
+├── website_scraper.py      # Web scraping tool
+├── requirements.txt        # Main Python dependencies
+└── package.json            # Node.js dependencies
+```
+
+## Data Directory
+
+The `data/` directory contains various document collections:
+- `ass/` - ASS organization documents (57 PDFs)
+- `llhs/` - LLHS organization documents (33 PDFs)
+- `ls/` - LS organization documents (265 PDFs)
+- `lss/` - LSS organization documents (49 PDFs)
+- `zso/` - ZSO organization documents (24 PDFs)
+- `raw/` - Raw source documents and archives
+
+Total: **428+ PDF documents** ready for analysis.
+
+## Development Scripts
+
+```bash
+# Process all documents
+python backend/scripts/process_documents.py
+
+# Rebuild vector index from scratch
+python backend/scripts/rebuild_index.py
+
+# Run Python backend
+uvicorn backend.main:app --reload
+
+# Run Next.js dev server
+npm run dev
+
+# Database operations
+npm run db:push
+npm run db:generate
+npm run db:studio
+```
+
+## Deployment
+
+### Python Backend
+
+Deploy to Railway, Render, Fly.io, or similar:
+
+```bash
+# Install dependencies
+pip install -r backend/requirements.txt
+
+# Run with uvicorn
+uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+```
+
+### Next.js Frontend
+
+Deploy to Vercel:
+
+```bash
+# Build
+npm run build
+
+# Deploy
+vercel
+```
+
+Update `PYTHON_BACKEND_URL` in Vercel environment variables to point to your deployed Python backend.
+
+## Configuration
+
+Key configuration options in `backend/config.py`:
+
+- `CHUNK_SIZE`: Text chunk size (default: 800 characters)
+- `CHUNK_OVERLAP`: Overlap between chunks (default: 150 characters)
+- `EMBEDDING_MODEL`: Sentence transformer model (multilingual support)
+- `TOP_K_DEFAULT`: Default number of results (default: 5)
+
+## Troubleshooting
+
+### Vector Database Issues
+
+If the vector database becomes corrupted:
+
+```bash
+python backend/scripts/rebuild_index.py
+```
+
+### PDF Processing Errors
+
+Some PDFs may fail to process. Check logs for specific errors. The system will continue processing other files.
+
+### Backend Connection Issues
+
+Ensure the Python backend is running on port 8000 and `PYTHON_BACKEND_URL` is correctly set in `.env.local`.
+
+## License
+
+See LICENSE file for details.
