@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "backend": "python -m uvicorn backend.main:app --reload --port 8000",
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
     "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
