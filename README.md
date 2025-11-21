@@ -34,13 +34,17 @@ This project combines a Next.js chatbot frontend with a Python FastAPI backend f
 ### 1. Clone and Install Dependencies
 
 ```bash
-# Install Python dependencies
-source venv/bin/activate
-pip install -r requirements.txt
-pip install -r backend/requirements.txt
+# Install all dependencies
+npm run install:all
 
-# Install Node.js dependencies
-npm install
+# Or install separately:
+# Python dependencies
+source venv/bin/activate
+pip install -r python/requirements.txt
+pip install -r python/backend/requirements.txt
+
+# Node.js dependencies
+cd frontend && npm install
 ```
 
 ### 2. Environment Configuration
@@ -77,7 +81,7 @@ Before using the RAG system, process all PDF documents:
 source venv/bin/activate
 
 # Process all PDFs in data/ and scraped_files/ directories
-python backend/scripts/process_documents.py
+cd python && PYTHONPATH=. python backend/scripts/process_documents.py
 ```
 
 This will:
@@ -152,30 +156,36 @@ The application will be available at:
 
 ```
 akademikai_ai/
-├── backend/                 # Python FastAPI backend
-│   ├── main.py             # FastAPI application
-│   ├── config.py           # Configuration
-│   ├── requirements.txt    # Python dependencies
-│   ├── services/           # Core services
-│   │   ├── pdf_processor.py
-│   │   ├── vectorizer.py
-│   │   └── rag_service.py
-│   └── scripts/            # Utility scripts
-│       ├── process_documents.py
-│       └── rebuild_index.py
-├── src/                     # Next.js frontend
-│   └── app/
-│       ├── api/             # API routes
-│       │   ├── chat/       # Chat endpoint
-│       │   ├── rag/        # RAG proxy
-│       │   └── documents/  # Documents list
-│       └── ui/             # React components
-├── data/                    # PDF documents (400+ files)
-├── scraped_files/           # Scraped documents
-├── chroma_db/              # Vector database (generated)
-├── website_scraper.py      # Web scraping tool
-├── requirements.txt        # Main Python dependencies
-└── package.json            # Node.js dependencies
+├── python/                  # Python backend and scripts
+│   ├── backend/            # FastAPI backend
+│   │   ├── main.py         # FastAPI application
+│   │   ├── config.py       # Configuration
+│   │   ├── requirements.txt # Backend dependencies
+│   │   ├── services/       # Core services
+│   │   │   ├── pdf_processor.py
+│   │   │   ├── vectorizer.py
+│   │   │   └── rag_service.py
+│   │   └── scripts/        # Utility scripts
+│   │       ├── process_documents.py
+│   │       └── rebuild_index.py
+│   ├── scripts/            # Standalone scripts
+│   │   └── website_scraper.py
+│   └── requirements.txt    # Main Python dependencies
+├── frontend/               # Next.js frontend
+│   ├── src/                # Source code
+│   │   └── app/
+│   │       ├── api/        # API routes
+│   │       │   ├── chat/   # Chat endpoint
+│   │       │   ├── rag/    # RAG proxy
+│   │       │   └── documents/ # Documents list
+│   │       └── ui/         # React components
+│   ├── public/             # Static assets
+│   ├── package.json        # Node.js dependencies
+│   └── [config files]      # Next.js config files
+├── data/                   # PDF documents (400+ files)
+├── scraped_files/          # Scraped documents
+├── chroma_db/             # Vector database (generated)
+└── package.json           # Root package.json with scripts
 ```
 
 ## Data Directory
@@ -194,13 +204,13 @@ Total: **428+ PDF documents** ready for analysis.
 
 ```bash
 # Process all documents
-python backend/scripts/process_documents.py
+cd python && PYTHONPATH=. python backend/scripts/process_documents.py
 
 # Rebuild vector index from scratch
-python backend/scripts/rebuild_index.py
+cd python && PYTHONPATH=. python backend/scripts/rebuild_index.py
 
 # Run Python backend
-uvicorn backend.main:app --reload
+npm run backend
 
 # Run Next.js dev server
 npm run dev
@@ -219,10 +229,11 @@ Deploy to Railway, Render, Fly.io, or similar:
 
 ```bash
 # Install dependencies
-pip install -r backend/requirements.txt
+pip install -r python/requirements.txt
+pip install -r python/backend/requirements.txt
 
 # Run with uvicorn
-uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+cd python && PYTHONPATH=. uvicorn backend.main:app --host 0.0.0.0 --port $PORT
 ```
 
 ### Next.js Frontend

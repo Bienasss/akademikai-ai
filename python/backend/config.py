@@ -10,9 +10,9 @@ class Settings(BaseSettings):
         "https://*.vercel.app"
     ]
     
-    CHROMA_DB_PATH: str = str(Path(__file__).parent.parent / "chroma_db")
-    DATA_DIR: str = str(Path(__file__).parent.parent / "data")
-    SCRAPED_FILES_DIR: str = str(Path(__file__).parent.parent / "scraped_files" / "documents")
+    CHROMA_DB_PATH: str = str(Path(__file__).parent.parent.parent / "chroma_db")
+    DATA_DIR: str = str(Path(__file__).parent.parent.parent / "data")
+    SCRAPED_FILES_DIR: str = str(Path(__file__).parent.parent.parent / "scraped_files" / "documents")
     
     EMBEDDING_MODEL: str = "paraphrase-multilingual-MiniLM-L12-v2"
     
