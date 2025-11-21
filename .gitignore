@@ -222,3 +222,5 @@ scraped_files/
 vector_db/
 chroma_db/
 *.index
+*.pdf 
+data/
